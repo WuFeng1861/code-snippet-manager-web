@@ -1,10 +1,36 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
 
 :root {
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --font-sans: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
 /* 全局基础样式 */
@@ -64,15 +90,15 @@ pre, code {
   .btn {
     @apply px-4 py-2 rounded-md font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
   }
-  
+
   .btn-primary {
     @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
   }
-  
+
   .btn-secondary {
     @apply bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-500;
   }
-  
+
   .btn-accent {
     @apply bg-accent-600 text-white hover:bg-accent-700 focus:ring-accent-500;
   }
@@ -82,9 +108,9 @@ pre, code {
   }
 
   .input {
-    @apply block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm 
-           focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-800 dark:text-white
-           sm:text-sm;
+    @apply block w-full rounded-md border-gray-300 dark:border-gray-700 shadow-sm
+    focus:border-primary-500 focus:ring-primary-500 dark:bg-gray-800 dark:text-white
+    sm:text-sm;
   }
 
   .card {

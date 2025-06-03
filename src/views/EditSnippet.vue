@@ -38,6 +38,8 @@ const isFormValid = computed(() => {
 const languageOptions = [
   { value: 'javascript', label: 'JavaScript' },
   { value: 'typescript', label: 'TypeScript' },
+  { value: 'vue', label: 'Vue' },
+  { value: 'react', label: 'React' },
   { value: 'html', label: 'HTML' },
   { value: 'css', label: 'CSS' },
   { value: 'python', label: 'Python' },
@@ -62,18 +64,19 @@ onMounted(async () => {
   try {
     const id = parseInt(route.params.id as string)
     const snippet = await snippetsStore.getSnippet(id)
-    
+
     if (!snippet) {
       error.value = t('errors.notFound')
       return
     }
-    
+
     // 填充表单数据
     title.value = snippet.title
     content.value = snippet.content
     description.value = snippet.description || ''
     language.value = snippet.language
-    selectedTagIds.value = snippet.tagIds
+    selectedTagIds.value = snippet.tagIds.map(tagId => Number(tagId))
+    console.log(snippet, 'snippet', languageOptions)
   } catch (err) {
     console.error('Failed to fetch snippet:', err)
     error.value = t('errors.serverError')
@@ -85,14 +88,14 @@ onMounted(async () => {
 // 更新代码片段
 const updateSnippet = async () => {
   if (!isFormValid.value) {
-    error.value = t('errors.required', { field: t('snippets.title') }) + ', ' + 
+    error.value = t('errors.required', { field: t('snippets.title') }) + ', ' +
                   t('errors.required', { field: t('snippets.content') })
     return
   }
-  
+
   saving.value = true
   error.value = ''
-  
+
   try {
     const id = parseInt(route.params.id as string)
     const snippet = await snippetsStore.updateSnippet({
@@ -103,7 +106,7 @@ const updateSnippet = async () => {
       language: language.value,
       tagIds: selectedTagIds.value
     })
-    
+
     // 导航到片段详情页
     router.push({ name: 'SnippetDetail', params: { id } })
   } catch (err) {
@@ -117,7 +120,7 @@ const updateSnippet = async () => {
 // 创建新标签
 const createTag = async () => {
   if (!newTagName.value.trim()) return
-  
+
   try {
     const tag = await tagsStore.createTag({ name: newTagName.value })
     selectedTagIds.value.push(tag.id)
@@ -151,12 +154,12 @@ const cancel = () => {
         {{ t('snippets.edit') }}
       </h1>
     </div>
-    
+
     <!-- 加载状态 -->
     <div v-if="loading" class="flex justify-center items-center py-12">
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
     </div>
-    
+
     <!-- 错误状态 -->
     <div v-else-if="error" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
       <div class="text-danger-600 dark:text-danger-400 mb-4">
@@ -177,7 +180,7 @@ const cancel = () => {
         {{ t('common.back') }}
       </button>
     </div>
-    
+
     <!-- 编辑表单 -->
     <div v-else class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
       <form @submit.prevent="updateSnippet" class="space-y-6">
@@ -195,7 +198,7 @@ const cancel = () => {
             :placeholder="t('snippets.title')"
           />
         </div>
-        
+
         <!-- 描述 -->
         <div>
           <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -209,7 +212,7 @@ const cancel = () => {
             :placeholder="t('snippets.description')"
           ></textarea>
         </div>
-        
+
         <!-- 编程语言 -->
         <div>
           <label for="language" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -226,7 +229,7 @@ const cancel = () => {
             </option>
           </select>
         </div>
-        
+
         <!-- 标签 -->
         <div>
           <div class="flex justify-between items-center">
@@ -241,7 +244,7 @@ const cancel = () => {
               + {{ t('tags.create') }}
             </button>
           </div>
-          
+
           <!-- 已有标签选择 -->
           <div v-if="tagsStore.allTags.length > 0" class="mt-2 flex flex-wrap gap-2">
             <button
@@ -262,7 +265,7 @@ const cancel = () => {
           <div v-else class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {{ t('tags.noTags') }}
           </div>
-          
+
           <!-- 新标签输入 -->
           <div v-if="showNewTagInput" class="mt-2 flex">
             <input
@@ -280,7 +283,7 @@ const cancel = () => {
             </button>
           </div>
         </div>
-        
+
         <!-- 代码内容 -->
         <div>
           <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -297,12 +300,12 @@ const cancel = () => {
             ></textarea>
           </div>
         </div>
-        
+
         <!-- 错误信息 -->
         <div v-if="error" class="text-danger-600 dark:text-danger-400 text-sm">
           {{ error }}
         </div>
-        
+
         <!-- 按钮 -->
         <div class="flex justify-end space-x-4">
           <button

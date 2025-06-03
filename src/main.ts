@@ -10,9 +10,13 @@ import './style.css'
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 
-// 创建并挂载应用
 createApp(App)
   .use(pinia)
   .use(router)
   .use(i18n)
-  .mount('#app')
+  .mount('#app').$nextTick(() => {
+  // Use contextBridge
+  window.ipcRenderer.on('main-process-message', (_event, message) => {
+    console.log(message)
+  })
+})

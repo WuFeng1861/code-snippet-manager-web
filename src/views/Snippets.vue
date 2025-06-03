@@ -72,21 +72,21 @@ onMounted(() => {
 const filteredSnippets = computed(() => {
   return snippetsStore.allSnippets.filter(snippet => {
     // 搜索标题和描述
-    const matchesSearch = 
-      searchQuery.value === '' || 
+    const matchesSearch =
+      searchQuery.value === '' ||
       snippet.title.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       (snippet.description && snippet.description.toLowerCase().includes(searchQuery.value.toLowerCase()))
-    
+
     // 标签筛选
-    const matchesTags = 
-      selectedTags.value.length === 0 || 
+    const matchesTags =
+      selectedTags.value.length === 0 ||
       selectedTags.value.some(tagId => snippet.tagIds.includes(tagId))
-    
+
     // 语言筛选
-    const matchesLanguage = 
-      selectedLanguage.value === '' || 
+    const matchesLanguage =
+      selectedLanguage.value === '' ||
       snippet.language.toLowerCase() === selectedLanguage.value.toLowerCase()
-    
+
     return matchesSearch && matchesTags && matchesLanguage
   })
 })
@@ -134,14 +134,14 @@ const highlightCode = (code: string, language: string) => {
       'vue': 'javascript',
       'react': 'javascript'
     }
-    
+
     const mappedLanguage = languageMap[language.toLowerCase()] || language.toLowerCase()
-    
+
     // 如果语言不存在，使用纯文本
     if (!hljs.getLanguage(mappedLanguage)) {
       return hljs.highlightAuto(code).value
     }
-    
+
     return hljs.highlight(code, { language: mappedLanguage }).value
   } catch (error) {
     console.error('Highlight error:', error)
@@ -156,7 +156,7 @@ const highlightCode = (code: string, language: string) => {
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
         {{ t('navigation.snippets') }}
       </h1>
-      
+
       <button
         @click="createSnippet"
         class="btn btn-primary flex items-center"
@@ -165,7 +165,7 @@ const highlightCode = (code: string, language: string) => {
         {{ t('snippets.create') }}
       </button>
     </div>
-    
+
     <!-- 搜索和筛选 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
       <div class="flex flex-col md:flex-row gap-4">
@@ -183,7 +183,7 @@ const highlightCode = (code: string, language: string) => {
             />
           </div>
         </div>
-        
+
         <!-- 语言筛选 -->
         <div class="w-full md:w-48">
           <select
@@ -196,7 +196,7 @@ const highlightCode = (code: string, language: string) => {
           </select>
         </div>
       </div>
-      
+
       <!-- 标签筛选 -->
       <div v-if="tagsStore.allTags.length > 0" class="mt-4">
         <div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -219,7 +219,7 @@ const highlightCode = (code: string, language: string) => {
         </div>
       </div>
     </div>
-    
+
     <!-- 代码片段列表 -->
     <div v-if="filteredSnippets.length > 0" class="space-y-4">
       <div
@@ -238,13 +238,13 @@ const highlightCode = (code: string, language: string) => {
                 {{ snippet.description }}
               </p>
             </div>
-            
+
             <!-- 同步状态指示器 -->
             <div class="ml-4 flex items-center">
               <span
                 :class="[
                   'px-2 py-1 text-xs rounded-full',
-                  getSyncStatus(snippet.id) === 'synced' 
+                  getSyncStatus(snippet.id) === 'synced'
                     ? 'bg-success-100 text-success-800 dark:bg-success-900/30 dark:text-success-400'
                     : getSyncStatus(snippet.id) === 'pending'
                       ? 'bg-warning-100 text-warning-800 dark:bg-warning-900/30 dark:text-warning-400'
@@ -255,28 +255,28 @@ const highlightCode = (code: string, language: string) => {
               </span>
             </div>
           </div>
-          
+
           <!-- 标签和语言 -->
           <div class="mt-2 flex flex-wrap gap-2 items-center">
             <span class="px-2 py-1 text-xs rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
               {{ snippet.language }}
             </span>
-            
+
             <span
               v-for="tagId in snippet.tagIds"
               :key="tagId"
               class="px-2 py-1 text-xs rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-400"
             >
-              {{ tagsStore.allTags.find(t => t.id === tagId)?.name || '' }}
+              {{ tagsStore.allTags.find(t => Number(t.id) === Number(tagId))?.name || tagId}}
             </span>
           </div>
-          
+
           <!-- 代码预览 -->
           <div class="mt-3 relative">
             <pre class="text-sm bg-gray-100 dark:bg-gray-900 rounded-md p-3 overflow-x-auto max-h-40">
               <code v-html="highlightCode(snippet.content.slice(0, 200) + (snippet.content.length > 200 ? '...' : ''), snippet.language)"></code>
             </pre>
-            
+
             <!-- 操作按钮 -->
             <div class="absolute top-2 right-2 flex space-x-2">
               <button
@@ -292,7 +292,7 @@ const highlightCode = (code: string, language: string) => {
         </div>
       </div>
     </div>
-    
+
     <!-- 空状态 -->
     <div
       v-else

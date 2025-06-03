@@ -1,9 +1,14 @@
 import http from './http'
-import type { Snippet, SnippetCreateDTO } from '../types/snippet'
+import type {Snippet, SnippetCreateDTO, SnippetUpdateDTO} from '../types/snippet';
 
 export const snippetsApi = {
   // 创建代码片段
   createSnippet: (snippet: SnippetCreateDTO) => {
+    return http.post<Snippet>('/snippets', snippet)
+  },
+  
+  // 更新代码片段
+  updateSnippet: (snippet: SnippetUpdateDTO) => {
     return http.post<Snippet>('/snippets', snippet)
   },
   

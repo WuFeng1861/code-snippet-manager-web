@@ -25,7 +25,7 @@ onMounted(async () => {
   try {
     const id = parseInt(route.params.id as string)
     snippet.value = await snippetsStore.getSnippet(id)
-    
+
     if (!snippet.value) {
       error.value = t('errors.notFound')
     } else {
@@ -45,7 +45,7 @@ onMounted(async () => {
 // 复制代码到剪贴板
 const copyToClipboard = () => {
   if (!snippet.value) return
-  
+
   navigator.clipboard.writeText(snippet.value.content)
     .then(() => {
       isCopied.value = true
@@ -66,7 +66,7 @@ const editSnippet = () => {
 // 删除代码片段
 const deleteSnippet = async () => {
   if (!snippet.value) return
-  
+
   if (confirm(t('snippets.confirmDelete'))) {
     try {
       await snippetsStore.deleteSnippet(snippet.value.id)
@@ -84,8 +84,8 @@ const goBack = () => {
 
 // 获取标签名称
 const getTagName = (tagId: number) => {
-  const tag = tagsStore.allTags.find(t => t.id === tagId)
-  return tag ? tag.name : ''
+  const tag = tagsStore.allTags.find(t => Number(t.id) === Number(tagId))
+  return tag ? tag.name : tagId
 }
 </script>
 
@@ -95,7 +95,7 @@ const getTagName = (tagId: number) => {
     <div v-if="loading" class="flex justify-center items-center py-12">
       <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
     </div>
-    
+
     <!-- 错误状态 -->
     <div v-else-if="error" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
       <div class="text-danger-600 dark:text-danger-400 mb-4">
@@ -116,7 +116,7 @@ const getTagName = (tagId: number) => {
         {{ t('common.back') }}
       </button>
     </div>
-    
+
     <!-- 代码片段详情 -->
     <div v-else-if="snippet" class="space-y-6">
       <div class="flex justify-between items-center">
@@ -129,7 +129,7 @@ const getTagName = (tagId: number) => {
           </svg>
           {{ t('common.back') }}
         </button>
-        
+
         <div class="flex space-x-3">
           <button
             @click="editSnippet"
@@ -145,7 +145,7 @@ const getTagName = (tagId: number) => {
           </button>
         </div>
       </div>
-      
+
       <!-- 片段内容 -->
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
         <!-- 标题和描述 -->
@@ -156,13 +156,13 @@ const getTagName = (tagId: number) => {
           <p v-if="snippet.description" class="mt-2 text-gray-600 dark:text-gray-400">
             {{ snippet.description }}
           </p>
-          
+
           <!-- 标签和语言 -->
           <div class="mt-4 flex flex-wrap gap-2 items-center">
             <span class="px-3 py-1 text-sm rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
               {{ snippet.language }}
             </span>
-            
+
             <span
               v-for="tagId in snippet.tagIds"
               :key="tagId"
@@ -172,12 +172,12 @@ const getTagName = (tagId: number) => {
             </span>
           </div>
         </div>
-        
+
         <!-- 代码内容 -->
         <div class="relative">
           <!-- 代码内容 -->
           <pre class="p-6 bg-gray-100 dark:bg-gray-900 overflow-x-auto"><code class="language-{{ snippet.language.toLowerCase() }}">{{ snippet.content }}</code></pre>
-          
+
           <!-- 复制按钮 -->
           <button
             @click="copyToClipboard"

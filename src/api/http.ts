@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/auth'
 
 // 创建 axios 实例
 const http: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: 'http://localhost:60888/api' || '/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'

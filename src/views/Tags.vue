@@ -28,12 +28,12 @@ const createTag = async () => {
     error.value = t('errors.required', { field: t('tags.name') })
     return
   }
-  
+
   loading.value = true
   error.value = ''
-  
+
   try {
-    await tagsStore.createTag({ 
+    await tagsStore.createTag({
       name: newTagName.value,
       isHidden: false // 默认可选择
     })
@@ -59,11 +59,11 @@ const toggleTagSelectability = async (id: number, isHidden: boolean) => {
 const canManageTag = (tag: any) => {
   // 已登录用户可以操作自己的标签
   if (authStore.isAuthenticated) {
-    return tag.userId === authStore.currentUser?.id
+    return tag.userId == authStore.currentUser?.id
   }
   // 游客模式可以操作本地创建的标签
   if (authStore.guestMode) {
-    return tagsStore.localTags.some(t => t.id === tag.id)
+    return tagsStore.localTags.some(t => t.id == tag.id)
   }
   return false
 }
@@ -89,13 +89,13 @@ const displayTags = computed(() => {
         {{ t('navigation.tags') }}
       </h1>
     </div>
-    
+
     <!-- 创建新标签 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
         {{ t('tags.create') }}
       </h2>
-      
+
       <form @submit.prevent="createTag" class="flex gap-4">
         <div class="flex-1">
           <input
@@ -118,19 +118,19 @@ const displayTags = computed(() => {
         </button>
       </form>
     </div>
-    
+
     <!-- 标签列表 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <div class="p-6">
         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           {{ t('navigation.tags') }}
         </h2>
-        
+
         <!-- 加载状态 -->
         <div v-if="tagsStore.loading" class="py-12 text-center">
           <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600 mx-auto"></div>
         </div>
-        
+
         <!-- 错误状态 -->
         <div v-else-if="tagsStore.error" class="py-12 text-center">
           <p class="text-danger-600 dark:text-danger-400">
@@ -143,7 +143,7 @@ const displayTags = computed(() => {
             {{ t('common.retry') }}
           </button>
         </div>
-        
+
         <!-- 空状态 -->
         <div
           v-else-if="displayTags.length === 0"
@@ -161,7 +161,7 @@ const displayTags = computed(() => {
             {{ t('tags.createFirst') }}
           </p>
         </div>
-        
+
         <!-- 标签列表 -->
         <div v-else class="space-y-4">
           <div
@@ -174,12 +174,12 @@ const displayTags = computed(() => {
                 {{ tag.name }}
               </span>
               <!-- 本地标签标识 -->
-              <span v-if="tagsStore.localTags.some(t => t.id === tag.id)" 
+              <span v-if="tagsStore.localTags.some(t => t.id == tag.id)"
                 class="text-xs px-2 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-400 rounded-full">
                 {{ t('snippets.uploadStatus.local') }}
               </span>
             </div>
-            
+
             <!-- 可选择状态切换（对自己创建的标签可用） -->
             <button
               v-if="canManageTag(tag)"

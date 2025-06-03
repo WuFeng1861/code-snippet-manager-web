@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { setLocale, type SupportedLocale } from '../i18n'
@@ -32,30 +32,34 @@ const handleLogout = () => {
 }
 
 // 是否为移动设备
-const isMobile = computed(() => {
-  return window.innerWidth < 768
+const isMobile = ref(false)
+onMounted(() => {
+  isMobile.value = window.innerWidth < 768
+   window.addEventListener('resize', () => {
+    isMobile.value = window.innerWidth < 768
+  })
 })
 </script>
 
 <template>
   <div class="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
     <!-- 头部导航 -->
-    <AppHeader 
-      :is-authenticated="authStore.isAuthenticated" 
+    <AppHeader
+      :is-authenticated="authStore.isAuthenticated"
       :is-guest-mode="authStore.guestMode"
       :theme-mode="themeStore.mode"
       @toggle-theme="toggleTheme"
       @toggle-language="toggleLanguage"
       @logout="handleLogout"
     />
-    
+
     <div class="flex flex-1">
       <!-- 侧边栏 (仅在桌面端显示) -->
-      <AppSidebar 
-        v-if="!isMobile" 
+      <AppSidebar
+        v-if="!isMobile"
         :is-authenticated="authStore.isAuthenticated"
       />
-      
+
       <!-- 主内容区 -->
       <main class="flex-1 p-4 md:p-6">
         <div class="container mx-auto">
@@ -67,7 +71,7 @@ const isMobile = computed(() => {
         </div>
       </main>
     </div>
-    
+
     <!-- 页脚 -->
     <AppFooter />
   </div>

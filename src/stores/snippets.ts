@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useStorage } from '@vueuse/core'
 import { snippetsApi } from '../api/snippets'
 import { useAuthStore } from './auth'
-import type { Snippet, SnippetCreateDTO } from '../types/snippet'
+import type {Snippet, SnippetCreateDTO, SnippetUpdateDTO} from '../types/snippet';
 
 // 同步状态类型
 type SyncStatus = 'synced' | 'pending' | 'local'
@@ -28,7 +28,10 @@ export const useSnippetsStore = defineStore('snippets', () => {
   const allSnippets = computed(() => {
     // 如果用户已登录，返回已同步的片段加上本地未同步的
     if (authStore.isAuthenticated) {
-      return [...snippets.value, ...localSnippets.value]
+      return [...localSnippets.value.filter(snippet => {
+        // 不在snippets中，说明是本地片段
+         return !snippets.value.some(item => item.id === snippet.id)
+      }), ...snippets.value]
     }
     // 游客模式，只返回本地片段
     return localSnippets.value
@@ -44,10 +47,14 @@ export const useSnippetsStore = defineStore('snippets', () => {
     try {
       const response = await snippetsApi.getMySnippets()
       snippets.value = response.data
-      
+      console.log(response.data, 'fetchSnippets');
       // 处理同步状态
-      snippets.value.forEach(snippet => {
+      response.data.forEach(snippet => {
         syncStatusMap.value[snippet.id] = 'synced'
+        let localIndex = localSnippets.value.findIndex(item => item.id == snippet.id)
+        if (localIndex === -1) {
+          localSnippets.value.push(snippet);
+        }
       })
       
       loading.value = false
@@ -81,8 +88,9 @@ export const useSnippetsStore = defineStore('snippets', () => {
       try {
         const response = await snippetsApi.createSnippet(snippet)
         
-        // 更新本地存储，移除临时片段，添加从服务器返回的片段
+        // 更新本地存储，添加从服务器返回的片段
         localSnippets.value = localSnippets.value.filter(s => s.id !== tempId)
+        localSnippets.value.push(response.data)
         snippets.value.push(response.data)
         syncStatusMap.value[response.data.id] = 'synced'
         delete syncStatusMap.value[tempId]
@@ -100,17 +108,43 @@ export const useSnippetsStore = defineStore('snippets', () => {
       return tempSnippet
     }
   }
+  
+  // 更新代码片段
+  async function updateSnippet(snippet: SnippetUpdateDTO) {
+    // 先更新到本地
+    const othersSnippets = localSnippets.value.filter(s => s.id !== snippet.id)
+    const thisSnippet = localSnippets.value.find(s => s.id == snippet.id)
+    localSnippets.value = [...othersSnippets, {
+      ...thisSnippet,
+      ...snippet
+    }]
+    
+    // 如果用户已登录，尝试同步到服务器
+    if (authStore.isAuthenticated) {
+      try {
+        const response = await snippetsApi.updateSnippet(snippet)
+        
+        // 添加从服务器返回的片段
+        snippets.value =  snippets.value.filter(s => s.id !== snippet.id)
+        return response.data
+      } catch (err) {
+        console.error('Failed to update Server snippet:', err)
+
+        return snippet
+      }
+    } else {
+      // 游客模式，只保存在本地
+      return snippet
+    }
+  }
 
   // 删除代码片段
   async function deleteSnippet(id: number) {
-    // 检查是否为本地片段
-    const isLocal = localSnippets.value.some(s => s.id === id)
-    
     // 从本地存储中删除
     localSnippets.value = localSnippets.value.filter(s => s.id !== id)
     
     // 如果是已同步的片段且用户已登录，从服务器删除
-    if (!isLocal && authStore.isAuthenticated) {
+    if (authStore.isAuthenticated) {
       try {
         await snippetsApi.deleteSnippet(id)
         snippets.value = snippets.value.filter(s => s.id !== id)
@@ -129,17 +163,18 @@ export const useSnippetsStore = defineStore('snippets', () => {
   // 获取单个代码片段
   async function getSnippet(id: number) {
     // 先查找本地片段
-    const localSnippet = localSnippets.value.find(s => s.id === id)
+    const localSnippet = localSnippets.value.find(s => s.id == id)
     if (localSnippet) return localSnippet
     
     // 查找已加载的远程片段
-    const cachedSnippet = snippets.value.find(s => s.id === id)
+    const cachedSnippet = snippets.value.find(s => s.id == id)
     if (cachedSnippet) return cachedSnippet
     
     // 如果用户已登录，从服务器获取
     if (authStore.isAuthenticated) {
       try {
         const response = await snippetsApi.getSnippet(id)
+        localSnippets.value.push(response.data)
         return response.data
       } catch (err) {
         console.error('Failed to get snippet:', err)
@@ -171,7 +206,7 @@ export const useSnippetsStore = defineStore('snippets', () => {
           
           if (localIndex !== -1) {
             const tempId = localSnippets.value[localIndex].id
-            localSnippets.value.splice(localIndex, 1)
+            localSnippets.value[localIndex] = response.data
             delete syncStatusMap.value[tempId]
           }
           
@@ -216,6 +251,7 @@ export const useSnippetsStore = defineStore('snippets', () => {
     allSnippets,
     fetchSnippets,
     createSnippet,
+    updateSnippet,
     deleteSnippet,
     getSnippet,
   }

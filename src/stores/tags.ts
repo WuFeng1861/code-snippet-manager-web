@@ -19,18 +19,9 @@ export const useTagsStore = defineStore('tags', () => {
 
   // 所有可见的标签 (合并本地和远程，过滤掉隐藏的标签)
   const allTags = computed(() => {
-    // 如果用户已登录，返回已同步的标签加上本地标签
-    if (authStore.isAuthenticated) {
-      const visibleTags = tags.value.filter(tag => 
-        // 显示所有自己创建的标签和其他用户的公开标签
-        !tag.isHidden || tag.userId === authStore.currentUser?.id
-      )
-      return [...visibleTags, ...localTags.value]
-    }
-    // 游客模式，只返回本地标签和公开的远程标签
-    return [...tags.value.filter(tag => !tag.isHidden), ...localTags.value]
+    return [...localTags.value.filter(item => !tags.value.some(t => t.id == item.id)), ...tags.value]
   })
-
+  console.log('allTags', allTags)
   // 获取所有可见标签
   async function fetchAllTags() {
     // 游客模式不需要获取远程标签
@@ -40,8 +31,17 @@ export const useTagsStore = defineStore('tags', () => {
     error.value = null
     
     try {
-      const response = await tagsApi.getAllTags()
+      const response = await tagsApi.getMyTags()
       tags.value = response.data
+      response.data.forEach(tag => {
+        const index = localTags.value.findIndex(t => t.id == tag.id)
+        if (index === -1) {
+          localTags.value.push(tag)
+        }
+        if (index !== -1) {
+          localTags.value[index] = tag
+        }
+      })
       loading.value = false
     } catch (err) {
       console.error('Failed to fetch tags:', err)
@@ -88,8 +88,8 @@ export const useTagsStore = defineStore('tags', () => {
       try {
         const response = await tagsApi.createTag(tagData)
         
-        // 更新本地存储，移除临时标签，添加从服务器返回的标签
-        localTags.value = localTags.value.filter(t => t.id !== tempId)
+        // 更新本地存储对应的id，添加从服务器返回的标签
+        localTags.value = localTags.value.map(t => t.id == tempId ? { ...t, id: response.data.id } : t)
         tags.value.push(response.data)
         
         return response.data
@@ -105,22 +105,19 @@ export const useTagsStore = defineStore('tags', () => {
 
   // 更新标签可见性
   async function updateTagVisibility(id: number, isHidden: boolean) {
-    // 检查是否为本地标签
-    const isLocal = localTags.value.some(t => t.id === id)
+    // 处理本地数据
+    const index = localTags.value.findIndex(t => t.id == id)
+    if (index !== -1) {
+      localTags.value[index].isHidden = isHidden
+    }
     
-    if (isLocal) {
-      // 更新本地标签
-      const index = localTags.value.findIndex(t => t.id === id)
-      if (index !== -1) {
-        localTags.value[index].isHidden = isHidden
-      }
-    } else if (authStore.isAuthenticated) {
-      // 更新远程标签
+    // 更新远程标签
+    if (authStore.isAuthenticated) {
       try {
         const response = await tagsApi.updateTagVisibility(id, isHidden)
         
         // 更新本地缓存
-        const index = tags.value.findIndex(t => t.id === id)
+        const index = tags.value.findIndex(t => t.id == id)
         if (index !== -1) {
           tags.value[index] = response.data
         }

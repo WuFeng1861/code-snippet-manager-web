@@ -27,7 +27,7 @@ onMounted(() => {
 
   // 计算统计信息
   stats.value.snippetsCount = snippetsStore.snippets.length
-  stats.value.tagsCount = tagsStore.tags.filter(tag => tag.userId === authStore.currentUser?.id).length
+  stats.value.tagsCount = tagsStore.tags.filter(tag => tag.userId == authStore.currentUser?.id).length
 })
 
 // 退出登录
