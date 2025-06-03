@@ -63,8 +63,8 @@ const languageOptions = [
 const selectableTags = computed(() => {
   if (authStore.isAuthenticated) {
     // 登录用户可以看到自己的所有标签和其他用户的可选择标签
-    return tagsStore.allTags.filter(tag => 
-      !tag.isHidden || tag.userId === authStore.currentUser?.id
+    return tagsStore.allTags.filter(tag =>
+      !tag.isHidden || tag.userId == authStore.currentUser?.id
     )
   } else {
     // 游客只能看到本地标签和可选择的远程标签
@@ -75,14 +75,14 @@ const selectableTags = computed(() => {
 // 创建代码片段
 const createSnippet = async () => {
   if (!isFormValid.value) {
-    error.value = t('errors.required', { field: t('snippets.title') }) + ', ' + 
+    error.value = t('errors.required', { field: t('snippets.title') }) + ', ' +
                   t('errors.required', { field: t('snippets.content') })
     return
   }
-  
+
   loading.value = true
   error.value = ''
-  
+
   try {
     const snippet = await snippetsStore.createSnippet({
       title: title.value,
@@ -91,7 +91,7 @@ const createSnippet = async () => {
       language: language.value,
       tagIds: selectedTagIds.value
     })
-    
+
     // 导航到片段列表
     router.push({ name: 'Snippets' })
   } catch (err) {
@@ -105,9 +105,9 @@ const createSnippet = async () => {
 // 创建新标签
 const createTag = async () => {
   if (!newTagName.value.trim()) return
-  
+
   try {
-    const tag = await tagsStore.createTag({ 
+    const tag = await tagsStore.createTag({
       name: newTagName.value,
       isHidden: false // 默认可选择
     })
@@ -142,7 +142,7 @@ const cancel = () => {
         {{ t('snippets.create') }}
       </h1>
     </div>
-    
+
     <!-- 创建表单 -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
       <form @submit.prevent="createSnippet" class="space-y-6">
@@ -160,7 +160,7 @@ const cancel = () => {
             :placeholder="t('snippets.title')"
           />
         </div>
-        
+
         <!-- 描述 -->
         <div>
           <label for="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -174,7 +174,7 @@ const cancel = () => {
             :placeholder="t('snippets.description')"
           ></textarea>
         </div>
-        
+
         <!-- 编程语言 -->
         <div>
           <label for="language" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -191,7 +191,7 @@ const cancel = () => {
             </option>
           </select>
         </div>
-        
+
         <!-- 标签 -->
         <div>
           <div class="flex justify-between items-center">
@@ -206,7 +206,7 @@ const cancel = () => {
               + {{ t('tags.create') }}
             </button>
           </div>
-          
+
           <!-- 已有标签选择 -->
           <div v-if="selectableTags.length > 0" class="mt-2 flex flex-wrap gap-2">
             <button
@@ -227,7 +227,7 @@ const cancel = () => {
           <div v-else class="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {{ t('tags.noTags') }}
           </div>
-          
+
           <!-- 新标签输入 -->
           <div v-if="showNewTagInput" class="mt-2 flex">
             <input
@@ -245,7 +245,7 @@ const cancel = () => {
             </button>
           </div>
         </div>
-        
+
         <!-- 代码内容 -->
         <div>
           <label for="content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -262,12 +262,12 @@ const cancel = () => {
             ></textarea>
           </div>
         </div>
-        
+
         <!-- 错误信息 -->
         <div v-if="error" class="text-danger-600 dark:text-danger-400 text-sm">
           {{ error }}
         </div>
-        
+
         <!-- 按钮 -->
         <div class="flex justify-end space-x-4">
           <button

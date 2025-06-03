@@ -30,7 +30,7 @@ export const useSnippetsStore = defineStore('snippets', () => {
     if (authStore.isAuthenticated) {
       return [...localSnippets.value.filter(snippet => {
         // 不在snippets中，说明是本地片段
-         return !snippets.value.some(item => item.id === snippet.id)
+         return !snippets.value.some(item => item.id == snippet.id)
       }), ...snippets.value]
     }
     // 游客模式，只返回本地片段
@@ -112,7 +112,7 @@ export const useSnippetsStore = defineStore('snippets', () => {
   // 更新代码片段
   async function updateSnippet(snippet: SnippetUpdateDTO) {
     // 先更新到本地
-    const othersSnippets = localSnippets.value.filter(s => s.id !== snippet.id)
+    const othersSnippets = localSnippets.value.filter(s => s.id != snippet.id)
     const thisSnippet = localSnippets.value.find(s => s.id == snippet.id)
     localSnippets.value = [...othersSnippets, {
       ...thisSnippet,

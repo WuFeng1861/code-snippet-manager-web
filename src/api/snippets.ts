@@ -9,7 +9,7 @@ export const snippetsApi = {
   
   // 更新代码片段
   updateSnippet: (snippet: SnippetUpdateDTO) => {
-    return http.post<Snippet>('/snippets', snippet)
+    return http.post<Snippet>('/snippets/update', snippet)
   },
   
   // 获取当前用户的所有代码片段
