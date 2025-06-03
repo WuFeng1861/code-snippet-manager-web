@@ -92,10 +92,10 @@ router.beforeEach((to, from, next) => {
     return next({ name: 'Login', query: { redirect: to.fullPath } })
   }
   
-  // 仅限游客的路由
-  if (to.meta.guestOnly && authStore.isAuthenticated) {
-    return next({ name: 'Home' })
-  }
+  // // 仅限游客的路由
+  // if (to.meta.guestOnly && authStore.isAuthenticated) {
+  //   return next({ name: 'Home' })
+  // }
   
   next()
 })

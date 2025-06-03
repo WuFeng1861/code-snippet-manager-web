@@ -62,6 +62,7 @@ export const useAuthStore = defineStore('auth', () => {
     accessToken.value = null
     currentUser.value = null
     guestMode.value = false
+    localStorage.clear()
   }
 
   // 启用游客模式
